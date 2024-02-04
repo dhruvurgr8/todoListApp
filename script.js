@@ -11,15 +11,17 @@ const searchInput = document.getElementById("searchInput");
 const priorityFilter = document.getElementById("priorityFilter");
 const statusFilter = document.getElementById("statusFilter");
 const closeModal = document.querySelector(".close-modal");
+
 closeModal.addEventListener("click", (e) => {
   modal.classList.add("hide-modal");
 });
+
 let todo = 0;
 let inprogress = 0;
 let completed = 0;
 let highPriorityCounter = 0;
+let currentTask = null; // Store the current task being edited
 
-let taskData = {};
 let count = 0;
 
 function handleSubmit(e) {
@@ -37,7 +39,7 @@ function handleSubmit(e) {
     date: form.date.value,
     status: form.status.value,
   };
-  taskData = data;
+
   if (form.status.value == "todo") {
     todo++;
   } else if (form.status.value == "inprogress") {
@@ -50,9 +52,20 @@ function handleSubmit(e) {
   updateInProgress();
   updateTodo();
 
+  const div = createTaskCard(data); // Helper function to create task card
+  card.appendChild(div);
+
+  // Set currentTask for the newly created task
+  currentTask = div;
+
+  // Set up event listeners for the new task
+  setupTaskEventListeners(div);
+  form.reset();
+}
+
+function createTaskCard(data) {
   const div = document.createElement("div");
   div.classList.add("card-content");
-  form.reset();
   div.innerHTML = `
     <div>
       <span class="getDate">${data.date}</span>
@@ -65,41 +78,57 @@ function handleSubmit(e) {
       <button class="deleteBtn"><i class="fa-solid fa-trash"></i></button>
     </div>
   `;
+  return div;
+}
 
+function setupTaskEventListeners(div) {
   const deleteBtn = div.querySelector(".deleteBtn");
   deleteBtn.addEventListener("click", () => handleDelete(div));
 
   const editBtn = div.querySelector(".editBtn");
   editBtn.addEventListener("click", () => {
     modal.classList.remove("hide-modal");
-    editForm.editedTask.value = taskData.task;
-    editForm.editedDate.value = taskData.date;
-    editForm.editedPriority.value = taskData.priority;
-    editForm.editStatus.value = taskData.status;
-  });
 
-  card.appendChild(div);
+    // Store task data in currentTask variable
+    currentTask = div;
+
+    // Set the values of the edit form based on the current task
+    editForm.editedTask.value =
+      currentTask.querySelector(".getTask").textContent;
+    editForm.editedDate.value =
+      currentTask.querySelector(".getDate").textContent;
+    editForm.editedPriority.value =
+      currentTask.querySelector(".getPriority").textContent;
+    editForm.editStatus.value =
+      currentTask.querySelector(".getStatus").textContent;
+  });
 }
 
 editForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  const updatedValues = {
-    updatedTask: editForm.editedTask.value,
-    updatedDate: editForm.editedDate.value,
-    updatedPriority: editForm.editedPriority.value,
-    updatedStatus: editForm.editStatus.value,
-  };
-  console.log(updatedValues);
+
+  if (currentTask) {
+    const updatedValues = {
+      updatedTask: editForm.editedTask.value,
+      updatedDate: editForm.editedDate.value,
+      updatedPriority: editForm.editedPriority.value,
+      updatedStatus: editForm.editStatus.value,
+    };
+
+    // Update the current task with the edited values
+    const getDate = currentTask.querySelector(".getDate");
+    const getTask = currentTask.querySelector(".getTask");
+    const getPriority = currentTask.querySelector(".getPriority");
+    const getStatus = currentTask.querySelector(".getStatus");
+
+    getDate.textContent = updatedValues.updatedDate;
+    getTask.textContent = updatedValues.updatedTask;
+    getPriority.textContent = `Priority:  ${updatedValues.updatedPriority}`;
+    getStatus.textContent = `Status: ${updatedValues.updatedStatus}`;
+  }
+
   editForm.reset();
   modal.classList.add("hide-modal");
-  const getDate = document.querySelector(".getDate");
-  const getTask = document.querySelector(".getTask");
-  const getPriority = document.querySelector(".getPriority");
-  const getStatus = document.querySelector(".getStatus");
-  getDate.textContent = updatedValues.updatedDate;
-  getTask.textContent = updatedValues.updatedTask;
-  getPriority.textContent = `Priority:  ${updatedValues.updatedPriority}`;
-  getStatus.textContent = `Status: ${updatedValues.updatedStatus}`;
 });
 
 function handleDelete(cardContent) {
