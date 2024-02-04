@@ -23,20 +23,21 @@
           type="text"
           placeholder="Enter Your Todo-list Task"
           name="task"
+          required
         />
-        <select name="priority">
+        <select name="priority" required>
           <option>Select Priority</option>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <select name="status">
+        <select name="status" required>
           <option>Select Status</option>
           <option value="todo">ToDo</option>
           <option value="inprogress">InProgress</option>
           <option value="completed">completed</option>
         </select>
-        <input type="date" name="date" />
+        <input type="date" name="date" required />
         <button class="finalBtn" type="submit">Add Task</button>
       </form>
     </div>
